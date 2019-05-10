@@ -8,6 +8,7 @@
 # @Description:
 #
 #
+from bs4 import BeautifulSoup
 import requests
 import re
 import random
@@ -28,22 +29,42 @@ class AutoHomeSpider:
             "Upgrade-Insecure-Requests": "1",
             "Cache-Control": "max-age=0",
         }
+        self.seriesApi = "https://club.autohome.com.cn/frontapi/bbs/getSeriesByLetter?firstLetter=%s"     # 所有车系论坛链接api
+        self.forumUrl = "https://club.autohome.com.cn/bbs/forum-c-%d-1.html"
 
     def get_html(self, url):
-        # ipPools = requests.get('http://127.0.0.1:8899/api/v1/proxies', params={"anonymous": True})
-        # ipNum = random.randint(0, len(ipPools.json()))
-        # print(ipNum)
-        # randomIP = ipPools.json()['proxies'][ipNum]['ip']
-        # randomPort = ipPools.json()['proxies'][ipNum]['port']
-        # res = requests.get('http://api.ipify.org', proxies={'http': 'http://%s:%s' % (randomIP, randomPort)}, timeout=5)
-        res = requests.get(url, proxies={'http': 'http://94.16.120.18:5555'}, timeout=5)
-        print(res.text)
+        res = requests.get(url, headers=self.headers, timeout=5)
+        return res
+
+    def get_bbs_url(self):
+        """获取车型论坛链接"""
+        res = self.get_html(self.seriesApi % "L")   # 雷克萨斯车系首字母为"L"
+        allCarId = res.json()['result'][0]['bbsBrand']
+        for i in range(len(allCarId)):
+            if allCarId[i]['bbsBrandName'] == "雷克萨斯":
+                indexCarId = i
+                break
+        try:
+            for targetCar in allCarId[indexCarId]['bbsList']:
+                targetCarUrl = self.forumUrl % (targetCar['bbsId'])
+                targetCarName = targetCar['bbsName']
+                with open('targetCarUrl.txt', 'a', encoding='utf-8') as fw:
+                    fw.write(targetCarName + "||" + targetCarUrl + "\n")
+            print("目标车型链接文本保存成功...")
+        except Exception as e:
+            print(e)
+
+    def analysis_forumList(self, res):
+        """解析论坛帖子"""
+        soup = BeautifulSoup(res, 'html.parser')
+        urlList = soup.find_all('div', {'id': 'js-alphabet-bbs-wrap'})
 
 
 def main():
-    url = "https://club.autohome.com.cn/bbs/thread/a57a4ba8b2a2d824/80709874-1.html"
+    url = 'https://club.autohome.com.cn/#pvareaid=3311253'
     auto = AutoHomeSpider()
-    auto.get_html(url)
+    res = auto.get_html(url)
+    auto.get_bbs_url()
 
 
 if __name__ == '__main__':
