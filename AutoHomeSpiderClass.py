@@ -29,7 +29,7 @@ class AutoHomeSpider:
             "Upgrade-Insecure-Requests": "1",
             "Cache-Control": "max-age=0",
         }
-        self.seriesApi = "https://club.autohome.com.cn/frontapi/bbs/getSeriesByLetter?firstLetter=%s"     # 所有车系论坛链接api
+        self.seriesApi = "https://club.autohome.com.cn/frontapi/bbs/getSeriesByLetter?firstLetter=%s"  # 所有车系论坛链接api
         self.forumUrl = "https://club.autohome.com.cn/bbs/forum-c-%d-1.html"
 
     def get_html(self, url):
@@ -38,7 +38,7 @@ class AutoHomeSpider:
 
     def get_bbs_url(self):
         """获取车型论坛链接"""
-        res = self.get_html(self.seriesApi % "L")   # 雷克萨斯车系首字母为"L"
+        res = self.get_html(self.seriesApi % "L")  # 雷克萨斯车系首字母为"L"
         allCarId = res.json()['result'][0]['bbsBrand']
         for i in range(len(allCarId)):
             if allCarId[i]['bbsBrandName'] == "雷克萨斯":
@@ -54,17 +54,26 @@ class AutoHomeSpider:
         except Exception as e:
             print(e)
 
-    def analysis_forumList(self, res):
+    def analysis_forumPost(self, res):
         """解析论坛帖子"""
-        soup = BeautifulSoup(res, 'html.parser')
-        urlList = soup.find_all('div', {'id': 'js-alphabet-bbs-wrap'})
+        soup = BeautifulSoup(res.text, 'html.parser')
+        postList = soup.find_all('dl', {'class': 'list_dl'})
+        for post in postList:
+            try:
+                topic = post.find('a', {'class', 'a_topic'})
+                
+                print(topic['href'])
+                print(topic.get_text())
+            except Exception as e:
+                print(e)
+        # print(postList)
 
 
 def main():
-    url = 'https://club.autohome.com.cn/#pvareaid=3311253'
+    url = 'https://club.autohome.com.cn/bbs/forum-c-403-2.html'
     auto = AutoHomeSpider()
     res = auto.get_html(url)
-    auto.get_bbs_url()
+    auto.analysis_forumPost(res)
 
 
 if __name__ == '__main__':
