@@ -9,6 +9,7 @@
 #
 #
 from bs4 import BeautifulSoup
+from AutoHomeFont import get_new_font_dict
 import requests
 import csv
 import re
@@ -108,27 +109,43 @@ class AutoHomeSpider:
                 if str(reply['topicid']) == str(topic['id'][i]):
                     topic['reply'].append(reply['replys'])
                     topic['views'].append(reply['views'])
+                    break
         return topic
+
+    def analysis_Post(self, res):
+        """解析帖子"""
+        ttfUrl = re.findall(',url\(\'//(.*ttf)', res.text)[0]
+        ttfRes = requests.get("https://" + ttfUrl)
+        with open('temp.ttf', 'wb') as fw:
+            fw.write(ttfRes.content)
+        print("反爬虫字体 %s 下载成功..." % (ttfUrl.split('/')[-1]))
+        standardFontPath = 'standardFont.ttf'
+        newFontPath = 'temp.ttf'
+        font_dict = get_new_font_dict(standardFontPath, newFontPath)
+        print(font_dict)
 
 
 def main():
-    url = 'https://club.autohome.com.cn/bbs/forum-c-403-2.html'
+    # url = 'https://club.autohome.com.cn/bbs/forum-c-403-2.html'
+    url = 'https://club.autohome.com.cn/bbs/thread/3b9d8d1cfd0e9431/80967895-1.html'
     auto = AutoHomeSpider()
     res = auto.get_html(url)
-    topic = auto.analysis_forumPost(res)
+    # topic = auto.analysis_forumPost(res)
+    auto.analysis_Post(res)
 
-    # 写入csv文件
-    headers = ['Id', 'Title', 'Author', 'Reply', 'Views', 'Date', 'Url']
-    rows = list()
-    for i in range(len(topic['id'])):
-        rows.append((
-                    topic['id'][i], topic['title'][i], topic['author'][i], topic['reply'][i], topic['views'][i],
-                    topic['date'][i], "https://club.autohome.com.cn" + topic['url'][i]))
-    with open("test.csv", "a", newline="", encoding='utf_8_sig') as fw:
-        f_csv = csv.writer(fw)
-        f_csv.writerow(headers)
-        f_csv.writerows(rows)
-        print("CSV文件保存成功！")
+
+    # # 写入csv文件
+    # headers = ['Id', 'Title', 'Author', 'Reply', 'Views', 'Date', 'Url']
+    # rows = list()
+    # for i in range(len(topic['id'])):
+    #     rows.append((
+    #                 topic['id'][i], topic['title'][i], topic['author'][i], topic['reply'][i], topic['views'][i],
+    #                 topic['date'][i], "https://club.autohome.com.cn" + topic['url'][i]))
+    # with open("test.csv", "a", newline="", encoding='utf_8_sig') as fw:
+    #     f_csv = csv.writer(fw)
+    #     f_csv.writerow(headers)
+    #     f_csv.writerows(rows)
+    #     print("CSV文件保存成功！")
 
 
 if __name__ == '__main__':
