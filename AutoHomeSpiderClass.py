@@ -80,21 +80,21 @@ class AutoHomeSpider:
         soup = BeautifulSoup(res.text, 'html.parser')
         postList = soup.find_all('dl', {'class': 'list_dl'})
         topic = dict()
-        topic['url'] = list()           # 帖子链接列表
-        topic['title'] = list()          # 帖子标题列表
-        topic['date'] = list()          # 发帖日期列表
-        topic['author'] = list()        # 发帖用户列表
-        topic['id'] = list()            # 帖子Id列表
-        topic['reply'] = list()    # 帖子回复量列表
-        topic['views'] = list()     # 帖子访问量列表
+        topic['url'] = list()  # 帖子链接列表
+        topic['title'] = list()  # 帖子标题列表
+        topic['date'] = list()  # 发帖日期列表
+        topic['author'] = list()  # 发帖用户列表
+        topic['id'] = list()  # 帖子Id列表
+        topic['reply'] = list()  # 帖子回复量列表
+        topic['views'] = list()  # 帖子访问量列表
         for post in postList:
             try:
                 dt = post.find('a', {'class', 'a_topic'})
-                topicUrl = dt['href']        # 帖子链接
-                topicTitle = dt.get_text()    # 帖子标题
-                topicDate = post.find('span', {'class', 'tdate'}).get_text()                # 发帖日期
-                topicAuthor = post.find('a', {'class', 'linkblack'}).get_text()             # 发帖用户
-                topicId = post.find('dd', {'class', 'cli_dd'})['lang']                      # 帖子ID
+                topicUrl = dt['href']  # 帖子链接
+                topicTitle = dt.get_text()  # 帖子标题
+                topicDate = post.find('span', {'class', 'tdate'}).get_text()  # 发帖日期
+                topicAuthor = post.find('a', {'class', 'linkblack'}).get_text()  # 发帖用户
+                topicId = post.find('dd', {'class', 'cli_dd'})['lang']  # 帖子ID
                 topic['url'].append(topicUrl)
                 topic['title'].append(topicTitle)
                 topic['date'].append(topicDate)
@@ -113,7 +113,8 @@ class AutoHomeSpider:
         return topic
 
     def analysis_Post(self, res):
-        """解析帖子"""
+        """解析帖子内容"""
+        # 解析帖子中的字体文件
         ttfUrl = re.findall(',url\(\'//(.*ttf)', res.text)[0]
         ttfRes = requests.get("https://" + ttfUrl)
         with open('temp.ttf', 'wb') as fw:
@@ -123,16 +124,66 @@ class AutoHomeSpider:
         newFontPath = 'temp.ttf'
         font_dict = get_new_font_dict(standardFontPath, newFontPath)
         print(font_dict)
+        # 解析帖子中的数据
+        soup = BeautifulSoup(res.text, 'html.parser')
+        post = dict()
+        post['userName'] = list()  # 用户名
+        post['excellent'] = list()  # 精华帖
+        post['postNumber'] = list()  # 发帖量
+        post['replyNumber'] = list()  # 回复量
+        post['loginDate'] = list()  # 注册时间
+        post['location'] = list()  # 地区
+        post['postTime'] = list()  # 回复时间
+        post['postContent'] = list()  # 回复内容
+        replyList = soup.find_all('div', {'class': 'clearfix contstxt outer-section', 'style': ''})
+        for reply in replyList:
+            userName = reply.find('li', {'class': 'txtcenter fw'}).a.get_text().replace(" ", "").replace("\r\n", "")
+            ul = reply.find('ul', {'class': 'leftlist'})
+            liList = ul.find_all('li')
+            excellent = liList[2].get_text().replace(" ", "").replace("\n", "").replace("精华：", "").replace("帖", "").replace("\r", "")
+            postNumber, replyNumber = liList[3].get_text().replace(" ", "").replace("\n", "").replace("帖子：", "").replace("回", "").replace("帖", "").replace("\xa0", "").split("|")
+            loginDate = liList[4].get_text().replace(" ", "").replace("\n", "").replace("注册：", "")
+            location = liList[5].get_text().replace(" ", "").replace("\n", "").replace("来自：", "")
+            postTime = reply.find('span', {'xname': 'date'}).get_text()
+            postReply = reply.find('div', {'class': 'w740'})
+            # 解析反爬虫字体
+            yy_reply = reply.find('div', {'class': 'yy_reply_cont'})
+            if yy_reply:
+                content = yy_reply.get_text().encode('unicode_escape')
+            else:
+                content = postReply.get_text().encode('unicode_escape')
+            for key, value in font_dict.items():
+                new_key = r"\u" + key[3:].lower()
+                content = content.replace(str.encode(new_key), str.encode(value))
+            postContent = content.decode('unicode_escape').replace(" ", "").replace("\n", "").replace("\xa0", "")
+            # print(postContent)
+            # print(10*"=")
+            # 组合数据
+            post['userName'].append(userName)
+            post['excellent'].append(excellent)
+            post['postNumber'].append(postNumber)
+            post['replyNumber'].append(replyNumber)
+            post['loginDate'].append(loginDate)
+            post['location'].append(location)
+            post['postTime'].append(postTime)
+            post['postContent'].append(postContent)
+        print(post['excellent'])
+        print(post['postNumber'])
+        print(post['replyNumber'])
+        print(post['loginDate'])
+        print(post['location'])
+        print(post['postTime'])
+        print(post['postContent'])
 
 
 def main():
     # url = 'https://club.autohome.com.cn/bbs/forum-c-403-2.html'
-    url = 'https://club.autohome.com.cn/bbs/thread/3b9d8d1cfd0e9431/80967895-1.html'
+    # url = 'https://club.autohome.com.cn/bbs/thread/3b9d8d1cfd0e9431/80967895-1.html'
+    url = 'https://club.autohome.com.cn/bbs/thread/788b1cc73317fd0d/80766349-1.html'
     auto = AutoHomeSpider()
     res = auto.get_html(url)
     # topic = auto.analysis_forumPost(res)
     auto.analysis_Post(res)
-
 
     # # 写入csv文件
     # headers = ['Id', 'Title', 'Author', 'Reply', 'Views', 'Date', 'Url']
