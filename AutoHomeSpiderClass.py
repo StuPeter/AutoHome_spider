@@ -10,6 +10,7 @@
 #
 from bs4 import BeautifulSoup
 from AutoHomeFont import get_new_font_dict
+from snownlp import SnowNLP
 import requests
 import csv
 import re
@@ -135,13 +136,19 @@ class AutoHomeSpider:
         post['location'] = list()  # 地区
         post['postTime'] = list()  # 回复时间
         post['postContent'] = list()  # 回复内容
+        post['postSentiments'] = list()  # 回复内容积极程度0~1，1为积极
         replyList = soup.find_all('div', {'class': 'clearfix contstxt outer-section', 'style': ''})
         for reply in replyList:
             userName = reply.find('li', {'class': 'txtcenter fw'}).a.get_text().replace(" ", "").replace("\r\n", "")
             ul = reply.find('ul', {'class': 'leftlist'})
             liList = ul.find_all('li')
-            excellent = liList[2].get_text().replace(" ", "").replace("\n", "").replace("精华：", "").replace("帖", "").replace("\r", "")
-            postNumber, replyNumber = liList[3].get_text().replace(" ", "").replace("\n", "").replace("帖子：", "").replace("回", "").replace("帖", "").replace("\xa0", "").split("|")
+            excellent = liList[2].get_text().replace(" ", "").replace("\n", "").replace("精华：", "").replace("帖",
+                                                                                                           "").replace(
+                "\r", "")
+            postNumber, replyNumber = liList[3].get_text().replace(" ", "").replace("\n", "").replace("帖子：",
+                                                                                                      "").replace("回",
+                                                                                                                  "").replace(
+                "帖", "").replace("\xa0", "").split("|")
             loginDate = liList[4].get_text().replace(" ", "").replace("\n", "").replace("注册：", "")
             location = liList[5].get_text().replace(" ", "").replace("\n", "").replace("来自：", "")
             postTime = reply.find('span', {'xname': 'date'}).get_text()
@@ -167,13 +174,44 @@ class AutoHomeSpider:
             post['location'].append(location)
             post['postTime'].append(postTime)
             post['postContent'].append(postContent)
-        print(post['excellent'])
-        print(post['postNumber'])
-        print(post['replyNumber'])
-        print(post['loginDate'])
-        print(post['location'])
-        print(post['postTime'])
-        print(post['postContent'])
+            # 自然语言处理-情感分析
+            try:
+                s = SnowNLP(postContent)
+                score = s.sentiments
+            except:
+                score = "None"
+            post['postSentiments'].append(score)
+        return post
+
+    def write_csv(self, writeType, contentDict):
+        """写入csv文件"""
+        if writeType == "topic":
+            topic = contentDict
+            # headers = ['Id', 'Title', 'Author', 'Reply', 'Views', 'Date', 'Url']
+            rows = list()
+            for i in range(len(topic['id'])):
+                rows.append((
+                    topic['id'][i], topic['title'][i], topic['author'][i], topic['reply'][i], topic['views'][i],
+                    topic['date'][i], "https://club.autohome.com.cn" + topic['url'][i]))
+            with open("topic.csv", "a", newline="", encoding='utf_8_sig') as fw:
+                f_csv = csv.writer(fw)
+                # f_csv.writerow(headers)
+                f_csv.writerows(rows)
+                print("CSV文件保存成功！")
+        else:
+            post = contentDict
+            # headers = ['用户名', '精华帖数量', '发帖量', '回帖量', '注册日期', '地理位置', '回复日期', '回复内容', '情感得分']
+            rows = list()
+            for i in range(len(post['userName'])):
+                rows.append((
+                    post['userName'][i], post['excellent'][i], post['postNumber'][i], post['replyNumber'][i],
+                    post['loginDate'][i], post['location'][i], post['postTime'][i], post['postContent'][i],
+                    post['postSentiments'][i]))
+            with open("post.csv", "a", newline="", encoding='utf_8_sig') as fw:
+                f_csv = csv.writer(fw)
+                # f_csv.writerow(headers)
+                f_csv.writerows(rows)
+                print("CSV文件保存成功！")
 
 
 def main():
@@ -182,21 +220,17 @@ def main():
     url = 'https://club.autohome.com.cn/bbs/thread/788b1cc73317fd0d/80766349-1.html'
     auto = AutoHomeSpider()
     res = auto.get_html(url)
-    # topic = auto.analysis_forumPost(res)
-    auto.analysis_Post(res)
+    soup = BeautifulSoup(res.text, 'html.parser')
+    page = int(soup.find('span', {'class': 'fs'})['title'][2])
+    for i in range(page):
+        postUrl = 'https://club.autohome.com.cn/bbs/thread/788b1cc73317fd0d/80766349-1.html'.replace('-1',
+                                                                                                     '-' + str(i + 1))
+        print(postUrl)
+        res = auto.get_html(postUrl)
+        post = auto.analysis_Post(res)
+        auto.write_csv(writeType='post', contentDict=post)
 
-    # # 写入csv文件
-    # headers = ['Id', 'Title', 'Author', 'Reply', 'Views', 'Date', 'Url']
-    # rows = list()
-    # for i in range(len(topic['id'])):
-    #     rows.append((
-    #                 topic['id'][i], topic['title'][i], topic['author'][i], topic['reply'][i], topic['views'][i],
-    #                 topic['date'][i], "https://club.autohome.com.cn" + topic['url'][i]))
-    # with open("test.csv", "a", newline="", encoding='utf_8_sig') as fw:
-    #     f_csv = csv.writer(fw)
-    #     f_csv.writerow(headers)
-    #     f_csv.writerows(rows)
-    #     print("CSV文件保存成功！")
+    # topic = auto.analysis_forumPost(res)
 
 
 if __name__ == '__main__':
