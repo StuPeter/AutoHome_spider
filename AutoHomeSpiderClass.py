@@ -14,7 +14,7 @@ from snownlp import SnowNLP
 import requests
 import csv
 import re
-import random
+import time
 
 
 class AutoHomeSpider:
@@ -217,26 +217,26 @@ class AutoHomeSpider:
 
 
 def main():
-    url = 'https://club.autohome.com.cn/bbs/forum-c-403-1.html'
+    # 创建汽车之家爬虫类
     auto = AutoHomeSpider()
-    # res = auto.get_html(url)
+    # 选定论坛页，其中pageindex表示页码，bbsid表示车型代码
     topic = auto.analysis_forumPost(pageindex=1, bbsid=403)
-    print(topic)
-    # for postUrl in topic['url']:
-    #     print(postUrl)
-
-
-    # soup = BeautifulSoup(res.text, 'html.parser')
-    # page = int(soup.find('span', {'class': 'fs'})['title'][2])
-    # for i in range(page):
-    #     postUrl = 'https://club.autohome.com.cn/bbs/thread/788b1cc73317fd0d/80766349-1.html'.replace('-1',
-    #                                                                                                  '-' + str(i + 1))
-    #     print(postUrl)
-    #     res = auto.get_html(postUrl)
-    #     post = auto.analysis_Post(res)
-    #     auto.write_csv(writeType='post', contentDict=post)
-
-
+    # 循环爬取该页所有帖子
+    for postUrl in topic['url']:
+        res = auto.get_html(postUrl)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        try:
+            page = int(soup.find('span', {'class': 'fs'})['title'][2])
+        except:
+            page = 1
+        # 循环爬取该帖子所有回复
+        for i in range(page):
+            time.sleep(1)  # 延时设定为1秒，太快会出现验证码导致爬取失败
+            newPostUrl = postUrl.replace('-1', '-' + str(i + 1))
+            print(newPostUrl)
+            res = auto.get_html(newPostUrl)
+            post = auto.analysis_Post(res)
+            auto.write_csv(writeType='post', contentDict=post)  # 保存为csv文件
 
 
 if __name__ == '__main__':
