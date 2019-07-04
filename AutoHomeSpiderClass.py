@@ -33,6 +33,7 @@ class AutoHomeSpider:
             "Cache-Control": "max-age=0",
         }
         self.seriesApi = "https://club.autohome.com.cn/frontapi/bbs/getSeriesByLetter?firstLetter=%s"  # 所有车系论坛链接api
+        self.forumApi = "https://club.autohome.com.cn/frontapi/topics/getByBbsId"
         self.forumUrl = "https://club.autohome.com.cn/bbs/forum-c-%d-1.html"
         self.replyUrl = "https://clubajax.autohome.com.cn/topic/rv"
 
@@ -50,8 +51,8 @@ class AutoHomeSpider:
             "Accept-Encoding": "gzip, deflate, br",
             "Connection": "keep-alive",
         }
-        idStr = ""
-        idStr = idStr + ",".join(idList)
+        idStr = ","
+        idStr = idStr.join(idList)
         params = {
             "ids": idStr
         }
@@ -76,10 +77,20 @@ class AutoHomeSpider:
         except Exception as e:
             print(e)
 
-    def analysis_forumPost(self, res):
+    def analysis_forumPost(self, pageindex, bbsid):
         """解析论坛帖子"""
-        soup = BeautifulSoup(res.text, 'html.parser')
-        postList = soup.find_all('dl', {'class': 'list_dl'})
+        params = {
+            "pageindex": pageindex,
+            "pagesize": "50",
+            "bbs": "c",
+            "bbsid": bbsid,
+            "fields": "topicid,title,post_memberid,post_membername,postdate,ispoll,ispic,isrefine,replycount,viewcount,"
+                      "videoid,isvideo,videoinfo,qainfo,tags,topictype,imgs,jximgs,url,piccount,isjingxuan,issolve,"
+                      "liveid,livecover,topicimgs",
+            "orderby": "lastpostdata-",
+        }
+        res = requests.get(self.forumApi, headers=self.headers, params=params, timeout=5)
+        postList = res.json()['result']['list']
         topic = dict()
         topic['url'] = list()  # 帖子链接列表
         topic['title'] = list()  # 帖子标题列表
@@ -89,20 +100,11 @@ class AutoHomeSpider:
         topic['reply'] = list()  # 帖子回复量列表
         topic['views'] = list()  # 帖子访问量列表
         for post in postList:
-            try:
-                dt = post.find('a', {'class', 'a_topic'})
-                topicUrl = dt['href']  # 帖子链接
-                topicTitle = dt.get_text()  # 帖子标题
-                topicDate = post.find('span', {'class', 'tdate'}).get_text()  # 发帖日期
-                topicAuthor = post.find('a', {'class', 'linkblack'}).get_text()  # 发帖用户
-                topicId = post.find('dd', {'class', 'cli_dd'})['lang']  # 帖子ID
-                topic['url'].append(topicUrl)
-                topic['title'].append(topicTitle)
-                topic['date'].append(topicDate)
-                topic['author'].append(topicAuthor)
-                topic['id'].append(topicId)
-            except Exception as e:
-                print(e)
+            topic['url'].append(post['url'])
+            topic['title'].append(post['title'])
+            topic['date'].append(post['postdate'])
+            topic['author'].append(post['post_membername'])
+            topic['id'].append(str(post['topicid']))
         # 异步获取访问量和回复量
         res = self.get_reply_view(topic['id'])
         for i in range(len(topic['id'])):
@@ -124,7 +126,7 @@ class AutoHomeSpider:
         standardFontPath = 'standardFont.ttf'
         newFontPath = 'temp.ttf'
         font_dict = get_new_font_dict(standardFontPath, newFontPath)
-        print(font_dict)
+        # print(font_dict)
         # 解析帖子中的数据
         soup = BeautifulSoup(res.text, 'html.parser')
         post = dict()
@@ -215,22 +217,26 @@ class AutoHomeSpider:
 
 
 def main():
-    # url = 'https://club.autohome.com.cn/bbs/forum-c-403-2.html'
-    # url = 'https://club.autohome.com.cn/bbs/thread/3b9d8d1cfd0e9431/80967895-1.html'
-    url = 'https://club.autohome.com.cn/bbs/thread/788b1cc73317fd0d/80766349-1.html'
+    url = 'https://club.autohome.com.cn/bbs/forum-c-403-1.html'
     auto = AutoHomeSpider()
-    res = auto.get_html(url)
-    soup = BeautifulSoup(res.text, 'html.parser')
-    page = int(soup.find('span', {'class': 'fs'})['title'][2])
-    for i in range(page):
-        postUrl = 'https://club.autohome.com.cn/bbs/thread/788b1cc73317fd0d/80766349-1.html'.replace('-1',
-                                                                                                     '-' + str(i + 1))
-        print(postUrl)
-        res = auto.get_html(postUrl)
-        post = auto.analysis_Post(res)
-        auto.write_csv(writeType='post', contentDict=post)
+    # res = auto.get_html(url)
+    topic = auto.analysis_forumPost(pageindex=1, bbsid=403)
+    print(topic)
+    # for postUrl in topic['url']:
+    #     print(postUrl)
 
-    # topic = auto.analysis_forumPost(res)
+
+    # soup = BeautifulSoup(res.text, 'html.parser')
+    # page = int(soup.find('span', {'class': 'fs'})['title'][2])
+    # for i in range(page):
+    #     postUrl = 'https://club.autohome.com.cn/bbs/thread/788b1cc73317fd0d/80766349-1.html'.replace('-1',
+    #                                                                                                  '-' + str(i + 1))
+    #     print(postUrl)
+    #     res = auto.get_html(postUrl)
+    #     post = auto.analysis_Post(res)
+    #     auto.write_csv(writeType='post', contentDict=post)
+
+
 
 
 if __name__ == '__main__':
