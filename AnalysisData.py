@@ -8,16 +8,15 @@
 # @Description:汽车之家数据分析
 #
 #
-from example.commons import Faker
 from pyecharts import options as opts
 from pyecharts.charts import Map
+import matplotlib.pyplot as plt
 import csv
 
 provinceList = [
     '北京', '广东', '山东', '江苏', '河南', '上海', '河北', '浙江', '香港特别行政区', '陕西', '湖南', '重庆', '福建', '天津', '云南', '四川', '广西壮族自治区',
     '安徽', '海南', '江西', '湖北', '山西', '辽宁', '台湾', '黑龙江', '内蒙古自治区', '澳门特别行政区', '贵州', '甘肃', '青海', '新疆维吾尔自治区', '西藏自治区', '吉林',
     '宁夏回族自治区']
-
 
 def map_visualmap(data) -> Map:
     c = (
@@ -34,9 +33,14 @@ def map_visualmap(data) -> Map:
 def main():
     userLocList = list()
     locList = list()
+    scoreList = list()
     csvData = csv.reader(open('post.csv', encoding='utf_8_sig'))
     for row in csvData:
         userLoc = row[0] + "|" + row[5][:2]
+        if row[8] != 'None':
+            score = round(float(row[8]), 5)
+            scoreList.append(score)
+            print(score)
         userLocList.append(userLoc)
     # 根据用户名列表去重
     userLocList = list(set(userLocList))
@@ -55,8 +59,12 @@ def main():
     # print(locDict)
     print(locFreqList)
     c = map_visualmap(locFreqList)
-    c.render()
+    # 绘制散点图
+    plt.plot(scoreList, scoreList, 'ro')
+    plt.grid()
+    plt.title("情感得分散点图")
+    plt.show()
+
 
 if __name__ == '__main__':
     main()
-
