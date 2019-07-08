@@ -144,13 +144,10 @@ class AutoHomeSpider:
             userName = reply.find('li', {'class': 'txtcenter fw'}).a.get_text().replace(" ", "").replace("\r\n", "")
             ul = reply.find('ul', {'class': 'leftlist'})
             liList = ul.find_all('li')
-            excellent = liList[2].get_text().replace(" ", "").replace("\n", "").replace("精华：", "").replace("帖",
-                                                                                                           "").replace(
-                "\r", "")
-            postNumber, replyNumber = liList[3].get_text().replace(" ", "").replace("\n", "").replace("帖子：",
-                                                                                                      "").replace("回",
-                                                                                                                  "").replace(
-                "帖", "").replace("\xa0", "").split("|")
+            excellent = liList[2].get_text().replace(" ", "").replace("\n", "").replace("精华：", "").replace("帖", ""). \
+                replace("\r", "")
+            postNumber, replyNumber = liList[3].get_text().replace(" ", "").replace("\n", "").replace("帖子：", ""). \
+                replace("回", "").replace("帖", "").replace("\xa0", "").split("|")
             loginDate = liList[4].get_text().replace(" ", "").replace("\n", "").replace("注册：", "")
             location = liList[5].get_text().replace(" ", "").replace("\n", "").replace("来自：", "")
             postTime = reply.find('span', {'xname': 'date'}).get_text()
