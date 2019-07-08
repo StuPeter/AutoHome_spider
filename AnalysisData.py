@@ -22,10 +22,10 @@ provinceList = [
 def map_visualmap(data) -> Map:
     c = (
         Map()
-            .add("商家A", data, "china")
+            .add("雷克萨斯ES车友分布", data, "china")
             .set_global_opts(
-            title_opts=opts.TitleOpts(title="Map-VisualMap（分段型）"),
-            visualmap_opts=opts.VisualMapOpts(max_=200, is_piecewise=True),
+            title_opts=opts.TitleOpts(title="雷克萨斯ES车友分布"),
+            visualmap_opts=opts.VisualMapOpts(max_=200),
         )
     )
     return c
