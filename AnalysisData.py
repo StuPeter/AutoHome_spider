@@ -10,6 +10,7 @@
 #
 from pyecharts import options as opts
 from pyecharts.charts import Map
+from pylab import mpl
 import matplotlib.pyplot as plt
 import csv
 
@@ -34,12 +35,14 @@ def main():
     userLocList = list()
     locList = list()
     scoreList = list()
+    yscoreList = list()
     csvData = csv.reader(open('post.csv', encoding='utf_8_sig'))
     for row in csvData:
         userLoc = row[0] + "|" + row[5][:2]
         if row[8] != 'None':
             score = round(float(row[8]), 5)
             scoreList.append(score)
+            yscoreList.append(1-score)
             print(score)
         userLocList.append(userLoc)
     # 根据用户名列表去重
@@ -60,9 +63,13 @@ def main():
     print(locFreqList)
     c = map_visualmap(locFreqList)
     # 绘制散点图
-    plt.plot(scoreList, scoreList, 'ro')
-    plt.grid()
-    plt.title("情感得分散点图")
+    mpl.rcParams['font.sans-serif'] = ['FangSong']
+    plt.title('汽车口碑分析模型')
+    plt.xlabel('好评指数')
+    plt.ylabel('差评指数')
+    # 数据导入
+    plt.scatter(scoreList, yscoreList, color='r', marker='s')
+    plt.legend()
     plt.show()
 
 
