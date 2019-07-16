@@ -149,7 +149,10 @@ class AutoHomeSpider:
             postNumber, replyNumber = liList[3].get_text().replace(" ", "").replace("\n", "").replace("帖子：", ""). \
                 replace("回", "").replace("帖", "").replace("\xa0", "").split("|")
             loginDate = liList[4].get_text().replace(" ", "").replace("\n", "").replace("注册：", "")
-            location = liList[5].get_text().replace(" ", "").replace("\n", "").replace("来自：", "")
+            try:
+                location = liList[5].get_text().replace(" ", "").replace("\n", "").replace("来自：", "")
+            except:
+                location = ""
             postTime = reply.find('span', {'xname': 'date'}).get_text()
             postReply = reply.find('div', {'class': 'w740'})
             # 解析反爬虫字体
@@ -206,7 +209,7 @@ class AutoHomeSpider:
                     post['userName'][i], post['excellent'][i], post['postNumber'][i], post['replyNumber'][i],
                     post['loginDate'][i], post['location'][i], post['postTime'][i], post['postContent'][i],
                     post['postSentiments'][i]))
-            with open("post.csv", "a", newline="", encoding='utf_8_sig') as fw:
+            with open("雷克萨斯UX.csv", "a", newline="", encoding='utf_8_sig') as fw:
                 f_csv = csv.writer(fw)
                 # f_csv.writerow(headers)
                 f_csv.writerows(rows)
@@ -217,7 +220,7 @@ def main():
     # 创建汽车之家爬虫类
     auto = AutoHomeSpider()
     # 选定论坛页，其中pageindex表示页码，bbsid表示车型代码
-    topic = auto.analysis_forumPost(pageindex=1, bbsid=403)
+    topic = auto.analysis_forumPost(pageindex=2, bbsid=4197)
     # 循环爬取该页所有帖子
     for postUrl in topic['url']:
         res = auto.get_html(postUrl)
@@ -228,7 +231,7 @@ def main():
             page = 1
         # 循环爬取该帖子所有回复
         for i in range(page):
-            time.sleep(1)  # 延时设定为1秒，太快会出现验证码导致爬取失败
+            time.sleep(2)  # 延时设定为1秒，太快会出现验证码导致爬取失败
             newPostUrl = postUrl.replace('-1', '-' + str(i + 1))
             print(newPostUrl)
             res = auto.get_html(newPostUrl)
