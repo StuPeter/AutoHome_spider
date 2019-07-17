@@ -209,18 +209,22 @@ class AutoHomeSpider:
                     post['userName'][i], post['excellent'][i], post['postNumber'][i], post['replyNumber'][i],
                     post['loginDate'][i], post['location'][i], post['postTime'][i], post['postContent'][i],
                     post['postSentiments'][i]))
-            with open("雷克萨斯UX.csv", "a", newline="", encoding='utf_8_sig') as fw:
+            with open("雷克萨斯LX.csv", "a", newline="", encoding='utf_8_sig') as fw:
                 f_csv = csv.writer(fw)
                 # f_csv.writerow(headers)
-                f_csv.writerows(rows)
-                print("CSV文件保存成功！")
+                try:
+                    f_csv.writerows(rows)
+                    print("CSV文件保存成功！")
+                except Exception as e:
+                    print(e)
+
 
 
 def main():
     # 创建汽车之家爬虫类
     auto = AutoHomeSpider()
     # 选定论坛页，其中pageindex表示页码，bbsid表示车型代码
-    topic = auto.analysis_forumPost(pageindex=2, bbsid=4197)
+    topic = auto.analysis_forumPost(pageindex=1, bbsid=352)
     # 循环爬取该页所有帖子
     for postUrl in topic['url']:
         res = auto.get_html(postUrl)
