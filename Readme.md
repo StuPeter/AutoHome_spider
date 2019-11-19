@@ -60,7 +60,7 @@
 
 4. 同样在`main.py`中：
 
-   注释 **updateCarUrl()**,填入 **main()** 函数的参数：pageIndex和BBSId,其中pageIndex为该车型论谈的页码，BBSId可去`targetCarUrl.txt`中查找。
+   注释 **updateCarUrl()**,填入 **main()** 函数的参数：pageIndex和BBSId，其中pageIndex为该车型论谈的页码，BBSId可去`targetCarUrl.txt`中查找。
 
 5. 如上设置设置完毕后，直接运行main.py即可。ps:由于是单线程下载，可能需要较长时间，如果是固定IP请注意爬取的时间间隔，默认2秒。
 
