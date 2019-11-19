@@ -14,12 +14,14 @@ from snownlp import SnowNLP
 import requests
 import csv
 import re
-import time
 
 
 class AutoHomeSpider:
 
-    def __init__(self):
+    def __init__(self, nlp=False):
+        """
+        :param nlp: 是否开启评论情感打分功能，默认False，如果是True的话，需要安装snownlp。
+        """
         self.headers = {
             "Host": "club.autohome.com.cn",
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0",
@@ -28,7 +30,6 @@ class AutoHomeSpider:
             "Accept-Encoding": "gzip, deflate, br",
             # "Referer": "https://club.autohome.com.cn/bbs/forum-c-871-1.html",
             "Connection": "keep-alive",
-            # "Cookie": "ahpvno=6; pvidchain=3311253,3311253,6826793; fvlid=1557020630617i73BVtciYK; sessionip=183.132.184.132; sessionid=B6D727B8-56B0-46DD-9140-B514F3B80337%7C%7C2019-05-05+09%3A43%3A50.886%7C%7C0; autoid=a0a8f7d79866d31f24be9bcf9724c23c; ref=0%7C0%7C0%7C0%7C2019-05-05+09%3A58%3A43.321%7C2019-05-05+09%3A43%3A50.886; sessionvid=6BE01EFE-8AC0-4E09-95CA-4E2E9BC9EE5B; area=330299; ahpau=1; csrfToken=VGKFGgbqfyaZYv04pi7q1A3U; historybbsName4=c-871%7C%E9%AB%98%E5%B0%94%E5%A4%AB; __ah_uuid_ng=u_76903609; ahrlid=1557020956401U1ZVKhrjn6-1557022506437",
             "Upgrade-Insecure-Requests": "1",
             "Cache-Control": "max-age=0",
         }
@@ -36,6 +37,9 @@ class AutoHomeSpider:
         self.forumApi = "https://club.autohome.com.cn/frontapi/topics/getByBbsId"
         self.forumUrl = "https://club.autohome.com.cn/bbs/forum-c-%d-1.html"
         self.replyUrl = "https://clubajax.autohome.com.cn/topic/rv"
+        self.nlp = nlp
+        self.ttfPath = "TTF/temp.ttf"
+        self.standardTTFPath = "TTF/standardFont.ttf"
 
     def get_html(self, url):
         res = requests.get(url, headers=self.headers, timeout=5)
@@ -59,26 +63,39 @@ class AutoHomeSpider:
         res = requests.get(self.replyUrl, headers=headers, params=params)
         return res
 
-    def get_bbs_url(self):
-        """获取车型论坛链接"""
-        res = self.get_html(self.seriesApi % "L")  # 雷克萨斯车系首字母为"L"
-        allCarId = res.json()['result'][0]['bbsBrand']
-        for i in range(len(allCarId)):
-            if allCarId[i]['bbsBrandName'] == "雷克萨斯":
-                indexCarId = i
-                break
-        try:
-            for targetCar in allCarId[indexCarId]['bbsList']:
-                targetCarUrl = self.forumUrl % (targetCar['bbsId'])
-                targetCarName = targetCar['bbsName']
-                with open('targetCarUrl.txt', 'a', encoding='utf-8') as fw:
-                    fw.write(targetCarName + "||" + targetCarUrl + "\n")
-            print("目标车型链接文本保存成功...")
-        except Exception as e:
-            print(e)
+    def get_bbs_url(self, bbsBrandName=""):
+        """
+        获取车型论坛链接
+        :param bbsBrandName: 品牌名，例如宝马，奔驰等，默认空的话就获取所有车。
+        :return:
+        """
+        contentList = ["车型 || BBSId || 车型论坛链接\n"]
+        res = self.get_html(self.seriesApi)
+        allCars = res.json()['result']
+        for Car in allCars:
+            for bbsBrand in Car["bbsBrand"]:
+                for bbsList in bbsBrand["bbsList"]:
+                    targetCarBBSId = bbsList['bbsId']
+                    targetCarUrl = self.forumUrl % (bbsList['bbsId'])
+                    targetCarName = bbsList['bbsName']
+                    if bbsBrandName != "":
+                        if bbsBrandName in targetCarName:
+                            contentList.append(
+                                targetCarName + " || " + str(targetCarBBSId) + " || " + targetCarUrl + "\n")
+                    else:
+                        contentList.append(targetCarName + " || " + str(targetCarBBSId) + " || " + targetCarUrl + "\n")
+        with open('targetCarUrl.txt', 'w', encoding='utf-8') as fw:
+            for s in contentList:
+                fw.write(s)
+        print(bbsBrandName + "所有车型链接保存成功...")
 
     def analysis_forumPost(self, pageindex, bbsid):
-        """解析论坛帖子"""
+        """
+        解析论坛帖子
+        :param pageindex: 页码
+        :param bbsid: 车型ID
+        :return:
+        """
         params = {
             "pageindex": pageindex,
             "pagesize": "50",
@@ -116,17 +133,20 @@ class AutoHomeSpider:
         return topic
 
     def analysis_Post(self, res):
-        """解析帖子内容"""
+        """
+        解析帖子内容
+        :param res: html
+        :return:
+        """
         # 解析帖子中的字体文件
         ttfUrl = re.findall(',url\(\'//(.*ttf)', res.text)[0]
         ttfRes = requests.get("https://" + ttfUrl)
-        with open('temp.ttf', 'wb') as fw:
+        with open(self.ttfPath, 'wb') as fw:
             fw.write(ttfRes.content)
         print("反爬虫字体 %s 下载成功..." % (ttfUrl.split('/')[-1]))
-        standardFontPath = 'standardFont.ttf'
-        newFontPath = 'temp.ttf'
+        standardFontPath = self.standardTTFPath
+        newFontPath = self.ttfPath
         font_dict = get_new_font_dict(standardFontPath, newFontPath)
-        # print(font_dict)
         # 解析帖子中的数据
         soup = BeautifulSoup(res.text, 'html.parser')
         post = dict()
@@ -138,7 +158,6 @@ class AutoHomeSpider:
         post['location'] = list()  # 地区
         post['postTime'] = list()  # 回复时间
         post['postContent'] = list()  # 回复内容
-        post['postSentiments'] = list()  # 回复内容积极程度0~1，1为积极
         replyList = soup.find_all('div', {'class': 'clearfix contstxt outer-section', 'style': ''})
         for reply in replyList:
             userName = reply.find('li', {'class': 'txtcenter fw'}).a.get_text().replace(" ", "").replace("\r\n", "")
@@ -165,8 +184,6 @@ class AutoHomeSpider:
                 new_key = r"\u" + key[3:].lower()
                 content = content.replace(str.encode(new_key), str.encode(value))
             postContent = content.decode('unicode_escape').replace(" ", "").replace("\n", "").replace("\xa0", "")
-            # print(postContent)
-            # print(10*"=")
             # 组合数据
             post['userName'].append(userName)
             post['excellent'].append(excellent)
@@ -177,16 +194,23 @@ class AutoHomeSpider:
             post['postTime'].append(postTime)
             post['postContent'].append(postContent)
             # 自然语言处理-情感分析
-            try:
-                s = SnowNLP(postContent)
-                score = s.sentiments
-            except:
-                score = "None"
-            post['postSentiments'].append(score)
+            if self.nlp:
+                post['postSentiments'] = list()  # 回复内容积极程度0~1，1为积极
+                try:
+                    s = SnowNLP(postContent)
+                    score = s.sentiments
+                except:
+                    score = "None"
+                post['postSentiments'].append(score)
         return post
 
-    def write_csv(self, writeType, contentDict):
-        """写入csv文件"""
+    def write_csv(self, contentDict, bbsid, writeType=""):
+        """
+        写入csv文件
+        :param contentDict:
+        :param writeType: 数据类型，默认写入analysis_Post函数返回值，如果填写为topic，可以写入analysis_forumPost函数返回。
+        :return:
+        """
         if writeType == "topic":
             topic = contentDict
             # headers = ['Id', 'Title', 'Author', 'Reply', 'Views', 'Date', 'Url']
@@ -195,7 +219,7 @@ class AutoHomeSpider:
                 rows.append((
                     topic['id'][i], topic['title'][i], topic['author'][i], topic['reply'][i], topic['views'][i],
                     topic['date'][i], "https://club.autohome.com.cn" + topic['url'][i]))
-            with open("topic.csv", "a", newline="", encoding='utf_8_sig') as fw:
+            with open(str(bbsid) + "_topic.csv", "a", newline="", encoding='utf_8_sig') as fw:
                 f_csv = csv.writer(fw)
                 # f_csv.writerow(headers)
                 f_csv.writerows(rows)
@@ -205,11 +229,16 @@ class AutoHomeSpider:
             # headers = ['用户名', '精华帖数量', '发帖量', '回帖量', '注册日期', '地理位置', '回复日期', '回复内容', '情感得分']
             rows = list()
             for i in range(len(post['userName'])):
-                rows.append((
-                    post['userName'][i], post['excellent'][i], post['postNumber'][i], post['replyNumber'][i],
-                    post['loginDate'][i], post['location'][i], post['postTime'][i], post['postContent'][i],
-                    post['postSentiments'][i]))
-            with open("雷克萨斯LX.csv", "a", newline="", encoding='utf_8_sig') as fw:
+                if self.nlp:
+                    rows.append((
+                        post['userName'][i], post['excellent'][i], post['postNumber'][i], post['replyNumber'][i],
+                        post['loginDate'][i], post['location'][i], post['postTime'][i], post['postContent'][i],
+                        post['postSentiments'][i]))
+                else:
+                    rows.append((
+                        post['userName'][i], post['excellent'][i], post['postNumber'][i], post['replyNumber'][i],
+                        post['loginDate'][i], post['location'][i], post['postTime'][i], post['postContent'][i]))
+            with open(str(bbsid) + "_post.csv", "a", newline="", encoding='utf_8_sig') as fw:
                 f_csv = csv.writer(fw)
                 # f_csv.writerow(headers)
                 try:
@@ -219,29 +248,7 @@ class AutoHomeSpider:
                     print(e)
 
 
-
-def main():
-    # 创建汽车之家爬虫类
-    auto = AutoHomeSpider()
-    # 选定论坛页，其中pageindex表示页码，bbsid表示车型代码
-    topic = auto.analysis_forumPost(pageindex=1, bbsid=352)
-    # 循环爬取该页所有帖子
-    for postUrl in topic['url']:
-        res = auto.get_html(postUrl)
-        soup = BeautifulSoup(res.text, 'html.parser')
-        try:
-            page = int(soup.find('span', {'class': 'fs'})['title'][2])
-        except:
-            page = 1
-        # 循环爬取该帖子所有回复
-        for i in range(page):
-            time.sleep(2)  # 延时设定为1秒，太快会出现验证码导致爬取失败
-            newPostUrl = postUrl.replace('-1', '-' + str(i + 1))
-            print(newPostUrl)
-            res = auto.get_html(newPostUrl)
-            post = auto.analysis_Post(res)
-            auto.write_csv(writeType='post', contentDict=post)  # 保存为csv文件
-
-
 if __name__ == '__main__':
-    main()
+    auto = AutoHomeSpider()
+    res = auto.get_html("https://club.autohome.com.cn/bbs/thread/aa8f44ef6911eb14/84890467-1.html")
+    post = auto.analysis_Post(res)

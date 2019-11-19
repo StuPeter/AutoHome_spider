@@ -12,20 +12,21 @@ from fontTools import ttLib
 
 # 选定作为标准字体的Unicode编码和对应文字
 uni_tuple = (
-            'uniED68', 'uniECB5', 'uniED06', 'uniEC53', 'uniECA5', 'uniEDE5', 'uniED32', 'uniED84', 'uniECD0', 'uniEC1D',
-            'uniEC6F', 'uniEDAF', 'uniEE01', 'uniED4E', 'uniEC9A', 'uniECEC', 'uniEC39', 'uniED79', 'uniEDCB', 'uniED18',
-            'uniED6A', 'uniECB6', 'uniEDF7', 'uniEC55', 'uniED95', 'uniECE2', 'uniED34', 'uniEC80', 'uniECD2', 'uniEC1F',
-            'uniED5F', 'uniEDB1', 'uniECFE', 'uniEC4A', 'uniEC9C', 'uniEDDD', 'uniEC3A', 'uniED7B')
+    'uniED68', 'uniECB5', 'uniED06', 'uniEC53', 'uniECA5', 'uniEDE5', 'uniED32', 'uniED84', 'uniECD0', 'uniEC1D',
+    'uniEC6F', 'uniEDAF', 'uniEE01', 'uniED4E', 'uniEC9A', 'uniECEC', 'uniEC39', 'uniED79', 'uniEDCB', 'uniED18',
+    'uniED6A', 'uniECB6', 'uniEDF7', 'uniEC55', 'uniED95', 'uniECE2', 'uniED34', 'uniEC80', 'uniECD2', 'uniEC1F',
+    'uniED5F', 'uniEDB1', 'uniECFE', 'uniEC4A', 'uniEC9C', 'uniEDDD', 'uniEC3A', 'uniED7B')
 word_tuple = ('低', '很', '了', '呢', '十', '右', '大', '不', '高', '矮',
               '好', '和', '的', '地', '是', '长', '六', '二', '五', '短',
               '近', '七', '少', '四', '着', '多', '左', '一', '更', '得',
               '三', '坏', '八', '上', '下', '小', '远', '九')
 new_uni_tuple = (
-            '\\u4f4e', '\\u5f88', '\\u4e86', '\\u5462', '\\u5341', '\\u53f3', '\\u5927', '\\u4e0d', '\\u9ad8', '\\u77ee',
-            '\\u597d', '\\u548c', '\\u7684', '\\u5730', '\\u662f', '\\u957f', '\\u516d', '\\u4e8c', '\\u4e94', '\\u77ed',
-            '\\u8fd1', '\\u4e03', '\\u5c11', '\\u56db', '\\u7740', '\\u591a', '\\u5de6', '\\u4e00', '\\u66f4', '\\u5f97',
-            '\\u4e09', '\\u574f', '\\u516b', '\\u4e0a', '\\u4e0b', '\\u5c0f', '\\u8fdc', '\\u4e5d',
+    '\\u4f4e', '\\u5f88', '\\u4e86', '\\u5462', '\\u5341', '\\u53f3', '\\u5927', '\\u4e0d', '\\u9ad8', '\\u77ee',
+    '\\u597d', '\\u548c', '\\u7684', '\\u5730', '\\u662f', '\\u957f', '\\u516d', '\\u4e8c', '\\u4e94', '\\u77ed',
+    '\\u8fd1', '\\u4e03', '\\u5c11', '\\u56db', '\\u7740', '\\u591a', '\\u5de6', '\\u4e00', '\\u66f4', '\\u5f97',
+    '\\u4e09', '\\u574f', '\\u516b', '\\u4e0a', '\\u4e0b', '\\u5c0f', '\\u8fdc', '\\u4e5d',
 )
+
 
 def comparison(l1, l2):
     """比较新字体和标准字体坐标差"""
@@ -69,12 +70,13 @@ def get_new_font_dict(standardFontPath, newFontPath):
     for nc_idx, nc in enumerate(newCoordinateList):
         for sc_idx, sc in enumerate(standardCoordinateList):
             if comparison(sc, nc):
-                font_dict[uni_list2[nc_idx]] = new_uni_tuple[sc_idx]
+                font_dict[uni_list2[nc_idx]] = new_uni_tuple[sc_idx]    # 显示汽车之家编码和Unicode
+                # font_dict[uni_list2[nc_idx]] = word_tuple[sc_idx] # 显示汽车之家和字
     print(font_dict)
     return font_dict
 
 
 if __name__ == '__main__':
-    standardFontPath = 'standardFont.ttf'
-    newFontPath = '03.ttf'
+    standardFontPath = 'TTF/standardFont.ttf'
+    newFontPath = 'TTF/02.ttf'
     get_new_font_dict(standardFontPath, newFontPath)
