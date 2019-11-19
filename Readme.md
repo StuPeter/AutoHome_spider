@@ -55,12 +55,12 @@
             # 爬虫主程序
             #main(pageIndex=1, BBSId=352)
     
-   建议您先注释 **main()** ,运行 **updateCarUrl()** 。这会帮您更新`targetCarUrl.txt`，在该文件中，您可以获取您想要车型的BBSId。
-   其中 **updateCarUrl()** 可以传入参数,例如 **updateCarUrl("奔驰")**，将只会获取所有奔驰车型的BBSId。
+   建议您先注释 **main()** ，运行 **updateCarUrl()** 。这会帮您更新`targetCarUrl.txt`，在该文件中，您可以获取您想要车型的BBSId。
+   其中 **updateCarUrl()** 可以传入参数，例如 **updateCarUrl("奔驰")**，将只会获取所有奔驰车型的BBSId。
 
 4. 同样在`main.py`中：
 
-   注释 **updateCarUrl()**,填入 **main()** 函数的参数：pageIndex和BBSId，其中pageIndex为该车型论谈的页码，BBSId可去`targetCarUrl.txt`中查找。
+   注释 **updateCarUrl()**，填入 **main()** 函数的参数：pageIndex和BBSId，其中pageIndex为该车型论谈的页码，BBSId可去`targetCarUrl.txt`中查找。
 
 5. 如上设置设置完毕后，直接运行main.py即可。ps:由于是单线程下载，可能需要较长时间，如果是固定IP请注意爬取的时间间隔，默认2秒。
 
