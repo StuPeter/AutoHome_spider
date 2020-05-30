@@ -62,11 +62,16 @@ def paser_html(html):
     for li in lis:
         p_div = li.find("div", {"class": "p-price"})
         n_div = li.find("div", {"class": "p-name"})
+        s_div = li.find("div", {"class": "p-shop"})
         good_id = li["data-sku"]
         good_name = n_div.a.em.get_text()
         good_price = p_div.strong.i.get_text()
+        try:
+            good_shop = s_div.span.a["title"]
+        except:
+            good_shop = ""
         good_url = n_div.a["href"]
-        good_list = [good_id, good_name, good_price, good_url]
+        good_list = [good_id, good_name, good_price, good_url, good_shop]
         goods_list.append(good_list)
         goods_id_list.append(good_id)
     # 异步加载评价
@@ -111,4 +116,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    good_type = "口罩"
+    start_url = "https://search.jd.com/Search?keyword=" + good_type
+    html = get_html(start_url)
+    goods_list = paser_html(html)
