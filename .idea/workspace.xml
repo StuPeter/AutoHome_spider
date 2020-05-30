@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="187b3758-cc8b-4632-9a96-7f999944e8ab" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/AutoHome_spider.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AutoHome_spider.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Jd_spider/goods_analysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Jd_spider/jdSpider.py" beforeDir="false" afterPath="$PROJECT_DIR$/Jd_spider/jdSpider.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,29 +42,7 @@
       <recent name="F:\Users\QQT\Documents\Python Projects\AutoHome_spider" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.jdSpider">
-    <configuration name="AnalysisData" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="AutoHome_spider" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/AnalysisData.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.goods_analysis">
     <configuration name="AutoHomeFont" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="AutoHome_spider" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -104,6 +79,28 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/AutoHomeSpiderClass.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="goods_analysis" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="AutoHome_spider" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Jd_spider" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Jd_spider/goods_analysis.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -158,11 +155,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.goods_analysis" />
         <item itemvalue="Python.jdSpider" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.AutoHomeSpiderClass" />
         <item itemvalue="Python.AutoHomeFont" />
-        <item itemvalue="Python.AnalysisData" />
       </list>
     </recent_temporary>
   </component>
@@ -177,7 +174,8 @@
       <option name="presentableId" value="Default" />
       <updated>1557020752261</updated>
       <workItem from="1589777529050" duration="3185000" />
-      <workItem from="1590846831145" duration="541000" />
+      <workItem from="1590846831145" duration="1270000" />
+      <workItem from="1590852092822" duration="840000" />
     </task>
     <task id="LOCAL-00001" summary="1.实现字体解析，帖子内容爬取">
       <created>1562137022062</created>
@@ -291,7 +289,14 @@
       <option name="project" value="LOCAL" />
       <updated>1574132221109</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="添加了店铺名爬取">
+      <created>1590847409506</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1590847409506</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -312,35 +317,45 @@
     <MESSAGE value="1.好评差评绘图" />
     <MESSAGE value="修改重构，添加Readme" />
     <MESSAGE value="修改Readme" />
-    <option name="LAST_COMMIT_MESSAGE" value="修改Readme" />
+    <MESSAGE value="添加了店铺名爬取" />
+    <option name="LAST_COMMIT_MESSAGE" value="添加了店铺名爬取" />
   </component>
   <component name="WindowStateProjectService">
     <state x="465" y="4" key="#jdSpider" timestamp="1590847090208">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="465" y="4" key="#jdSpider/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590847090208" />
-    <state width="1493" height="210" key="GridCell.Tab.0.bottom" timestamp="1590847280514">
+    <state x="329" y="0" key="CommitChangelistDialog2" timestamp="1590847408278">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="210" key="GridCell.Tab.0.bottom/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590847280514" />
-    <state width="1493" height="210" key="GridCell.Tab.0.center" timestamp="1590847280514">
+    <state x="329" y="0" key="CommitChangelistDialog2/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590847408278" />
+    <state width="1493" height="210" key="GridCell.Tab.0.bottom" timestamp="1590852892430">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="210" key="GridCell.Tab.0.center/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590847280514" />
-    <state width="1493" height="210" key="GridCell.Tab.0.left" timestamp="1590847280514">
+    <state width="1493" height="210" key="GridCell.Tab.0.bottom/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590852892430" />
+    <state width="1493" height="210" key="GridCell.Tab.0.center" timestamp="1590852892430">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="210" key="GridCell.Tab.0.left/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590847280514" />
-    <state width="1493" height="210" key="GridCell.Tab.0.right" timestamp="1590847280514">
+    <state width="1493" height="210" key="GridCell.Tab.0.center/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590852892430" />
+    <state width="1493" height="210" key="GridCell.Tab.0.left" timestamp="1590852892430">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="1493" height="210" key="GridCell.Tab.0.right/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590847280514" />
+    <state width="1493" height="210" key="GridCell.Tab.0.left/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590852892430" />
+    <state width="1493" height="210" key="GridCell.Tab.0.right" timestamp="1590852892430">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1493" height="210" key="GridCell.Tab.0.right/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590852892430" />
     <state x="270" y="57" key="SettingsEditor" timestamp="1590847100168">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="270" y="57" key="SettingsEditor/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590847100168" />
+    <state x="361" y="145" key="Vcs.Push.Dialog.v2" timestamp="1590847470750">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="361" y="145" key="Vcs.Push.Dialog.v2/0.0.1536.824/1920.0.1920.1040@0.0.1536.824" timestamp="1590847470750" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/AutoHome_spider$jdSpider.coverage" NAME="jdSpider Coverage Results" MODIFIED="1590847280505" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Jd_spider" />
+    <SUITE FILE_PATH="coverage/AutoHome_spider$goods_analysis.coverage" NAME="goods_analysis Coverage Results" MODIFIED="1590852892416" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Jd_spider" />
   </component>
 </project>
