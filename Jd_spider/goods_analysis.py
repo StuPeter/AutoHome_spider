@@ -11,5 +11,9 @@
 import pandas as pd
 
 goods = pd.DataFrame(pd.read_csv("jd_goods.csv", header=0, encoding="utf-8-sig"))
-target_goods = goods[goods["评价人数"] > 1000]
+target_goods = goods["商品名称"]
 print(target_goods)
+with open("goods_title.txt", "w", encoding="utf-8") as fw:
+    for v in target_goods.values:
+        v = v.replace("\n", "").replace("\r", "").replace("\t", "")
+        fw.write(v + "\n")
