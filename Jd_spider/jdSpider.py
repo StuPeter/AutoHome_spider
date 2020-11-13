@@ -53,6 +53,32 @@ def get_comment(id_list):
     return resp.json()
 
 
+def get_comment_content(goods_id, score, page, pageSize):
+    """获取商品评论"""
+    url = "https://club.jd.com/comment/productPageComments.action"
+    headers = {
+        "Host": "club.jd.com",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0",
+        "Accept": "*/*",
+        "Accept-Language": "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2",
+        "Connection": "keep-alive",
+        # "Referer": " https://item.jd.com/" + goods_id + ".html",
+    }
+    params = {
+        "callback": "",
+        "productId": goods_id,
+        "score": score,  # 好评为3， 中评为2， 差评为1
+        "sortType": "5",
+        "page": page,
+        "pageSize": pageSize,
+        "isShadowSku": "0",
+        "fold": "1",
+    }
+    # proxies = {"http": "http://60.168.206.37:8888", }
+    resp = requests.get(url, params=params, headers=headers, timeout=3)
+    return resp.json()
+
+
 def paser_html(html):
     """页面解析"""
     goods_list = []
@@ -62,11 +88,16 @@ def paser_html(html):
     for li in lis:
         p_div = li.find("div", {"class": "p-price"})
         n_div = li.find("div", {"class": "p-name"})
+        s_div = li.find("div", {"class": "p-shop"})
         good_id = li["data-sku"]
         good_name = n_div.a.em.get_text()
         good_price = p_div.strong.i.get_text()
+        try:
+            good_shop = s_div.span.a["title"]
+        except:
+            good_shop = ""
         good_url = n_div.a["href"]
-        good_list = [good_id, good_name, good_price, good_url]
+        good_list = [good_id, good_name, good_price, good_url, good_shop]
         goods_list.append(good_list)
         goods_id_list.append(good_id)
     # 异步加载评价
@@ -111,4 +142,20 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    # good_type = "口罩"
+    # start_url = "https://search.jd.com/Search?keyword=" + good_type
+    # html = get_html(start_url)
+    # goods_list = paser_html(html)
+    goods_id = "100011428518"
+    score = "1"
+    page = "0"
+    pageSize = "10"
+    for page in range(0, 1500):
+        print(page)
+        time.sleep(0.5)
+        jdata = get_comment_content(goods_id, score, str(page), pageSize)
+        print(jdata['comments'])
+        with open("100011428518.txt", "a", encoding="utf-8") as fw:
+            for i in jdata['comments']:
+                fw.write(i["content"] + "\n")
