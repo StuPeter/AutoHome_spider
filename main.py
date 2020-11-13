@@ -42,13 +42,16 @@ def main(pageIndex, BBSId):
             newPostUrl = postUrl.replace('-1', '-' + str(i + 1))
             print(newPostUrl)
             res = auto.get_html(newPostUrl)
-            post = auto.analysis_Post(res)
-            print(post)
-            auto.write_csv(contentDict=post, bbsid=BBSId)  # 保存为csv文件
+            try:
+                post = auto.analysis_Post(res)
+                print(post)
+                auto.write_csv(contentDict=post, bbsid=BBSId)  # 保存为csv文件
+            except Exception as e:
+                print(e)
 
 
 if __name__ == '__main__':
     # 更新targetCarUrl.txt
     # updateCarUrl()
     # 爬虫主程序
-    main(pageIndex=1, BBSId=352)
+    main(pageIndex=1, BBSId=3411)

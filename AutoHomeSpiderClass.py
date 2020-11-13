@@ -37,6 +37,8 @@ class AutoHomeSpider:
         self.forumApi = "https://club.autohome.com.cn/frontapi/topics/getByBbsId"
         self.forumUrl = "https://club.autohome.com.cn/bbs/forum-c-%d-1.html"
         self.replyUrl = "https://clubajax.autohome.com.cn/topic/rv"
+        self.userInfoUrl = "https://club.autohome.com.cn/frontapi/getUserInfoByIds"
+        self.userDetail = "https://club.autohome.com.cn/frontnc/user/getdetailusertpl/"
         self.nlp = nlp
         self.ttfPath = "TTF/temp.ttf"
         self.standardTTFPath = "TTF/standardFont.ttf"
@@ -45,7 +47,7 @@ class AutoHomeSpider:
         res = requests.get(url, headers=self.headers, timeout=5)
         return res
 
-    def get_reply_view(self, idList):
+    def get_reply_view(self, id_list):
         """获取某帖子的回复量和访问量"""
         headers = {
             "Host": "clubajax.autohome.com.cn",
@@ -55,12 +57,27 @@ class AutoHomeSpider:
             "Accept-Encoding": "gzip, deflate, br",
             "Connection": "keep-alive",
         }
-        idStr = ","
-        idStr = idStr.join(idList)
+        ids_str = ","
+        ids_str = ids_str.join(id_list)
         params = {
-            "ids": idStr
+            "ids": ids_str
         }
         res = requests.get(self.replyUrl, headers=headers, params=params)
+        return res
+
+    def get_user_info(self, userid_list):
+        """获取用户信息"""
+        userids_str = ","
+        userids_str = userids_str.join(userid_list)
+        params = {
+            "userids": userids_str
+        }
+        res = requests.get(self.userInfoUrl, headers=self.headers, params=params)
+        return res
+
+    def get_user_detail(self, userid):
+        """获取用户发帖信息"""
+        res = requests.get(self.userDetail + str(userid) + '-0')
         return res
 
     def get_bbs_url(self, bbsBrandName=""):
@@ -150,7 +167,9 @@ class AutoHomeSpider:
         # 解析帖子中的数据
         soup = BeautifulSoup(res.text, 'html.parser')
         post = dict()
+        post['userId'] = list()  # 用户Id
         post['userName'] = list()  # 用户名
+        post['sex'] = list()  # 用户名
         post['excellent'] = list()  # 精华帖
         post['postNumber'] = list()  # 发帖量
         post['replyNumber'] = list()  # 回复量
@@ -158,39 +177,20 @@ class AutoHomeSpider:
         post['location'] = list()  # 地区
         post['postTime'] = list()  # 回复时间
         post['postContent'] = list()  # 回复内容
-        replyList = soup.find_all('div', {'class': 'clearfix contstxt outer-section', 'style': ''})
+        replyList = soup.find_all('li', {'class': 'js-reply-floor-container', 'style': ''})
+        # 获取页面上的数据
         for reply in replyList:
-            userName = reply.find('li', {'class': 'txtcenter fw'}).a.get_text().replace(" ", "").replace("\r\n", "")
-            ul = reply.find('ul', {'class': 'leftlist'})
-            liList = ul.find_all('li')
-            excellent = liList[2].get_text().replace(" ", "").replace("\n", "").replace("精华：", "").replace("帖", ""). \
-                replace("\r", "")
-            postNumber, replyNumber = liList[3].get_text().replace(" ", "").replace("\n", "").replace("帖子：", ""). \
-                replace("回", "").replace("帖", "").replace("\xa0", "").split("|")
-            loginDate = liList[4].get_text().replace(" ", "").replace("\n", "").replace("注册：", "")
-            try:
-                location = liList[5].get_text().replace(" ", "").replace("\n", "").replace("来自：", "")
-            except:
-                location = ""
-            postTime = reply.find('span', {'xname': 'date'}).get_text()
-            postReply = reply.find('div', {'class': 'w740'})
+            userId = reply.find('div', {'class': 'js-user-info-container'})['data-user-id']
+            postTime = reply.find('span', {'class': 'reply-static-text fn-fl'}).strong.get_text()
+            postReply = reply.find('div', {'class': 'reply-detail'})
             # 解析反爬虫字体
-            yy_reply = reply.find('div', {'class': 'yy_reply_cont'})
-            if yy_reply:
-                content = yy_reply.get_text().encode('unicode_escape')
-            else:
-                content = postReply.get_text().encode('unicode_escape')
+            content = postReply.get_text().encode('unicode_escape')
             for key, value in font_dict.items():
                 new_key = r"\u" + key[3:].lower()
                 content = content.replace(str.encode(new_key), str.encode(value))
             postContent = content.decode('unicode_escape').replace(" ", "").replace("\n", "").replace("\xa0", "")
             # 组合数据
-            post['userName'].append(userName)
-            post['excellent'].append(excellent)
-            post['postNumber'].append(postNumber)
-            post['replyNumber'].append(replyNumber)
-            post['loginDate'].append(loginDate)
-            post['location'].append(location)
+            post['userId'].append(userId)
             post['postTime'].append(postTime)
             post['postContent'].append(postContent)
             # 自然语言处理-情感分析
@@ -202,6 +202,24 @@ class AutoHomeSpider:
                 except:
                     score = "None"
                 post['postSentiments'].append(score)
+        # 获取用户接口数据
+        if len(post['userId']) == 0:
+            raise ValueError("该帖子无人回复！已跳过！")
+        resp = self.get_user_info(post['userId'])
+        userinfos = resp.json()['result']
+        for userinfo in userinfos:
+            post['userName'].append(userinfo['Nickname'])
+            post['sex'].append(userinfo['Sex'])
+            post['loginDate'].append(userinfo['AddDate'])
+            # 获取用户发帖消息
+            res = self.get_user_detail(userinfo['UserId'])
+            user_about_soup = BeautifulSoup(res.text, 'html.parser')
+            user_about_count = user_about_soup.find('div', {'class': 'user-about-count'})
+            user_about_count_list = user_about_count.find_all('a', {'class': 'count-item'})
+            post['postNumber'].append(user_about_count_list[0].strong.get_text())
+            post['excellent'].append(user_about_count_list[1].strong.get_text())
+            post['replyNumber'].append(user_about_count_list[2].strong.get_text())
+            post['location'].append(user_about_soup.find('a', {'class': 'profile-text'}).get_text())
         return post
 
     def write_csv(self, contentDict, bbsid, writeType=""):
@@ -226,18 +244,19 @@ class AutoHomeSpider:
                 print("CSV文件保存成功！")
         else:
             post = contentDict
-            # headers = ['用户名', '精华帖数量', '发帖量', '回帖量', '注册日期', '地理位置', '回复日期', '回复内容', '情感得分']
+            # headers = ['用户Id', '用户名', '用户性别', '精华帖数量', '发帖量', '回帖量', '注册日期', '地理位置', '回复日期', '回复内容', '情感得分']
             rows = list()
             for i in range(len(post['userName'])):
                 if self.nlp:
                     rows.append((
-                        post['userName'][i], post['excellent'][i], post['postNumber'][i], post['replyNumber'][i],
-                        post['loginDate'][i], post['location'][i], post['postTime'][i], post['postContent'][i],
-                        post['postSentiments'][i]))
+                        post['userId'][i], post['userName'][i], post['sex'][i], post['excellent'][i],
+                        post['postNumber'][i], post['replyNumber'][i], post['loginDate'][i], post['location'][i],
+                        post['postTime'][i], post['postContent'][i], post['postSentiments'][i]))
                 else:
                     rows.append((
-                        post['userName'][i], post['excellent'][i], post['postNumber'][i], post['replyNumber'][i],
-                        post['loginDate'][i], post['location'][i], post['postTime'][i], post['postContent'][i]))
+                        post['userId'][i], post['userName'][i], post['sex'][i], post['excellent'][i],
+                        post['postNumber'][i], post['replyNumber'][i], post['loginDate'][i], post['location'][i],
+                        post['postTime'][i], post['postContent'][i]))
             with open(str(bbsid) + "_post.csv", "a", newline="", encoding='utf_8_sig') as fw:
                 f_csv = csv.writer(fw)
                 # f_csv.writerow(headers)
@@ -250,5 +269,6 @@ class AutoHomeSpider:
 
 if __name__ == '__main__':
     auto = AutoHomeSpider()
-    res = auto.get_html("https://club.autohome.com.cn/bbs/thread/aa8f44ef6911eb14/84890467-1.html")
+    res = auto.get_html("https://club.autohome.com.cn/bbs/thread/85c70698f428110b/91537150-1.html")
     post = auto.analysis_Post(res)
+    # auto.analysis_forumPost(1, 3411)
