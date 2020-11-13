@@ -177,6 +177,7 @@ class AutoHomeSpider:
         post['location'] = list()  # 地区
         post['postTime'] = list()  # 回复时间
         post['postContent'] = list()  # 回复内容
+        post['postSentiments'] = list()  # 回复内容积极程度0~1，1为积极
         replyList = soup.find_all('li', {'class': 'js-reply-floor-container', 'style': ''})
         # 获取页面上的数据
         for reply in replyList:
@@ -195,7 +196,6 @@ class AutoHomeSpider:
             post['postContent'].append(postContent)
             # 自然语言处理-情感分析
             if self.nlp:
-                post['postSentiments'] = list()  # 回复内容积极程度0~1，1为积极
                 try:
                     s = SnowNLP(postContent)
                     score = s.sentiments

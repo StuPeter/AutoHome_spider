@@ -25,7 +25,7 @@ def main(pageIndex, BBSId):
     :return:
     """
     # 创建汽车之家爬虫类
-    auto = AutoHomeSpider()
+    auto = AutoHomeSpider(nlp=True)
     # 选定论坛页，其中pageindex表示页码，bbsid表示车型代码
     topic = auto.analysis_forumPost(pageindex=pageIndex, bbsid=BBSId)
     # 循环爬取该页所有帖子
