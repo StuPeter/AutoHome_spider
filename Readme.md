@@ -1,12 +1,21 @@
-# 汽车之家爬虫(AutoHome_spider)
+
+
+# **注：汽车之家接口变化，项目已经失效**
+
+# ~~汽车之家爬虫(AutoHome_spider)~~
+
+
+
 [![Language](https://img.shields.io/badge/Language-Python-blue.svg)](https://www.python.org)
 
 > 把人类从重复的劳动中解放出来，去创造新的事物。
-
+## 
 
 ## 简介(Introduction)
 
-汽车之家可以说是非常大的一个汽车论坛了，本项目是为了研究某款车型的口碑开发的，能够定向的获取某款车型的帖子以及评论。解决了该网站的字体反爬虫。
+~~汽车之家可以说是非常大的一个汽车论坛了，本项目是为了研究某款车型的口碑开发的，能够定向的获取某款车型的帖子以及评论。解决了该网站的字体反爬虫。~~
+
+**汽车之家接口变化，项目已经失效**
 
 ## 快速开始(Quick start)
 
@@ -71,5 +80,4 @@
 ## 许可(License)
 [MIT license](https://github.com/StuPeter/Sougou_dict_spider/blob/master/LICENSE "MIT license")
     
-
 
